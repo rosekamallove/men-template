@@ -1,0 +1,3 @@
+[submodule "backend-template"]
+	path = backend-template
+	url = https://github.com/rosekamallove/backend-template
