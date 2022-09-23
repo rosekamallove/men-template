@@ -9,9 +9,11 @@ import {
   FormErrorMessage,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { object, string } from "zod";
+import { object, string, TypeOf } from "zod";
 
 const createUserSchema = object({
   firstName: string().min(1, "First Name is required"),
@@ -35,6 +37,8 @@ const createUserSchema = object({
   path: ["passwordConfirmation"],
 });
 
+type CreateUserInput = TypeOf<typeof createUserSchema>;
+
 export default function RegisterPage() {
   const {
     register,
@@ -44,19 +48,32 @@ export default function RegisterPage() {
     resolver: zodResolver(createUserSchema),
   });
 
+  const router = useRouter();
+
+  const [registerError, setRegisterError] = useState(null);
+
   const [show, setShow] = useState(false);
   const handleClick = () => setShow(!show);
 
   const [showC, setShowC] = useState(false);
   const handleClickC = () => setShowC(!showC);
 
-  const onSubmit = (values: any) => {
-    console.log({ values });
-  };
+  async function onSubmit(values: CreateUserInput) {
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/api/v1/users`,
+        values
+      );
+      router.push("/");
+    } catch (e: any) {
+      setRegisterError(e.message);
+    }
+  }
 
   return (
     <>
       <Container my={20}>
+        <p>{registerError}</p>
         <form onSubmit={handleSubmit(onSubmit)}>
           <FormControl isInvalid={errors.firstName ? true : false}>
             <FormLabel>First Name</FormLabel>
